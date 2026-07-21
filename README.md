@@ -2,6 +2,10 @@
 
 An AI-powered Resume Screening System built using Python and Streamlit.
 
+# Live Demo
+
+https://smart-resume-analyzer-9tutkn552utbdtjvoxexk8.streamlit.app/
+
 # Features
 
 Resume PDF Upload  
