@@ -5,7 +5,9 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 import io
 
-
+if "logged_in" not in st.session_state:
+    st.warning(" Please login first.")
+    st.switch_page("pages/login.py")
 def generate_pdf(score, skills, role):
 
     buffer = io.BytesIO()
@@ -67,8 +69,10 @@ st.set_page_config(
     page_icon="📄",
     layout="wide"
 )
+if "logged_in" not in st.session_state:
+    st.switch_page("pages/login.py")
 
-
+# Sidebar
 # Sidebar
 
 st.sidebar.title("🤖 Smart Resume Analyzer")
@@ -93,13 +97,18 @@ Technologies:
 """
 )
 
+if st.sidebar.button("Logout"):
+    st.session_state.clear()
+    st.switch_page("pages/login.py")
+
 
 st.title("🚀 Smart Resume Analyzer")
+
+st.success(f"👋 Welcome {st.session_state['user']}")
 
 st.subheader(
     "AI-Powered Resume Screening & Career Assistant"
 )
-
 
 
 skills = [
@@ -131,20 +140,23 @@ suggestion_rules = {
     "Communication": "Improve communication and presentation skills"
 
 }
-
-
+resume_sections = {
+    "Education": ["education", "academic", "b.tech", "diploma"],
+    "Skills": ["skills", "technical skills"],
+    "Projects": ["project", "projects"],
+    "Experience": ["experience", "internship", "work experience"],
+    "Certifications": ["certification", "certifications", "certificate"],
+    "Contact": ["email", "phone", "mobile", "linkedin"]
+}
 
 uploaded_file = st.file_uploader(
     "Upload Resume PDF",
     type=["pdf"]
 )
 
-
 job_description = st.text_area(
     "Paste Job Description Here"
 )
-
-
 
 if uploaded_file:
 
@@ -153,18 +165,36 @@ if uploaded_file:
         filetype="pdf"
     )
 
-
     text = ""
 
     for page in pdf:
         text += page.get_text()
 
-
     text_lower = text.lower()
 
+    # ===========================
+    # ATS Resume Section Analysis
+    # ===========================
 
+    st.subheader("📋 ATS Resume Section Analysis")
 
+    for section, keywords in resume_sections.items():
+
+        found = False
+
+        for keyword in keywords:
+            if keyword in text_lower:
+                found = True
+                break
+
+        if found:
+            st.success(f"✅ {section} Found")
+        else:
+            st.error(f"❌ {section} Missing")
+
+    # ===========================
     # Skill Detection
+    # ===========================
 
     detected = []
 
@@ -173,9 +203,9 @@ if uploaded_file:
         if skill.lower() in text_lower:
             detected.append(skill)
 
-
-
+    # ===========================
     # Resume Score
+    # ===========================
 
     score = min(
         len(detected) * 5,
@@ -231,7 +261,7 @@ if uploaded_file:
 
     # Skill Chart
 
-    st.subheader("📊 Skill Analysis")
+    st.subheader("Skill Analysis")
 
 
     if detected:
@@ -293,14 +323,14 @@ if uploaded_file:
     for suggestion in suggestions:
 
         st.warning(
-            "📌 " + suggestion
+            "" + suggestion
         )
 
 
 
     # Resume Text
 
-    st.subheader("📄 Resume Text")
+    st.subheader(" Resume Text")
 
 
     st.text_area(
@@ -313,7 +343,7 @@ if uploaded_file:
 
     # Job Matching
 
-    st.subheader("🎯 Job Description Matching")
+    st.subheader(" Job Description Matching")
 
 
     if job_description:
